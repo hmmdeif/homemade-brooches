@@ -6,9 +6,6 @@ import "forge-std/Test.sol";
 import {TestHelpers} from "./TestHelpers.t.sol";
 
 contract EstforBroochNFTTest is TestHelpers {
-
-    function setUp() public {}
-
     function test_RevertWithdrawWhenNotOwner() public {
         _deploy();
 
