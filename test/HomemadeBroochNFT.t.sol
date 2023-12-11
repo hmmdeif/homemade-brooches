@@ -246,4 +246,48 @@ contract HomemadeBroochNFTTest is Test {
         assertEq(nft.balanceOf(user, 1), 3);
         assertEq(nft.balanceOf(user, 2), 2);
     }
+
+    function test_MintBatchMultipleTokensTwice() public {
+        _deploy();
+
+        vm.prank(owner);        
+        nft.setTokenUnlock(1, true, 10 ether);
+
+        vm.prank(owner);        
+        nft.setTokenUnlock(2, true, 20 ether);
+
+        {
+            vm.deal(user, 74 ether); // 10 + 11 + 12 + 20 + 21
+            vm.prank(user);
+
+            uint256[] memory ids = new uint256[](2);
+            ids[0] = 1;
+            ids[1] = 2;
+
+            uint256[] memory values = new uint256[](2);
+            values[0] = 3;
+            values[1] = 2;
+
+            nft.mintBatch{ value: 74 ether }(user, ids, values, "");
+            assertEq(nft.balanceOf(user, 1), 3);
+            assertEq(nft.balanceOf(user, 2), 2);
+        }
+
+        {
+            vm.deal(user, 49 ether); // 13 + 14 + 22
+            vm.prank(user);
+
+            uint256[] memory ids = new uint256[](2);
+            ids[0] = 1;
+            ids[1] = 2;
+
+            uint256[] memory values = new uint256[](2);
+            values[0] = 2;
+            values[1] = 1;
+
+            nft.mintBatch{ value: 49 ether }(user, ids, values, "");
+            assertEq(nft.balanceOf(user, 1), 5);
+            assertEq(nft.balanceOf(user, 2), 3);
+        }
+    }
 }

@@ -41,7 +41,7 @@ contract HomemadeBroochNFT is ERC1155, Ownable, IERC2981, IHomemadeBroochNFT {
         for (uint256 i = 0; i < ids.length; ++i) {
             require(tokenUnlocked[ids[i]], "Mint: token locked");            
             for (uint256 j = 0; j < values[i]; ++j) {
-                total += tokenSupply[ids[i]] + (j * 1e18) + baseTokenPrice[ids[i]];
+                total += ((tokenSupply[ids[i]] + j) * 1e18) + baseTokenPrice[ids[i]];
             }         
             tokenSupply[ids[i]] += values[i];
         }
