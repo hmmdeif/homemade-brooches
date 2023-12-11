@@ -3,18 +3,18 @@ pragma solidity ^0.8.23;
 
 import "forge-std/Test.sol";
 
-import {EstforBroochNFT} from "src/EstforBroochNFT.sol";
+import {HomemadeBroochNFT} from "src/HomemadeBroochNFT.sol";
 
-contract EstforBroochNFTTest is Test {
+contract HomemadeBroochNFTTest is Test {
     uint256 public userKey = 1;
     uint256 public ownerKey = 2;
     address public user = vm.addr(userKey);
     address public owner = vm.addr(ownerKey);
 
-    EstforBroochNFT public nft;
+    HomemadeBroochNFT public nft;
 
     function _deploy() internal {
-        nft = new EstforBroochNFT(owner, "");
+        nft = new HomemadeBroochNFT(owner, "");
     }
 
     function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {

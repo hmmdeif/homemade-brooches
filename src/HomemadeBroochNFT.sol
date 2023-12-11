@@ -4,9 +4,9 @@ pragma solidity ^0.8.23;
 import {IERC2981, IERC165} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IEstforBroochNFT} from "./interfaces/IEstforBroochNFT.sol";
+import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
 
-contract EstforBroochNFT is ERC1155, Ownable, IERC2981, IEstforBroochNFT {
+contract HomemadeBroochNFT is ERC1155, Ownable, IERC2981, IHomemadeBroochNFT {
 
     address private _royaltyReceiver;
     uint8 private _royaltyFee;

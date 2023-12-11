@@ -1,6 +1,6 @@
-# Estfor Brooches Contracts
+# Deif's Homemade Brooches Contracts
 
-![Main](https://github.com/hmmdeif/estfor-brooches/actions/workflows/test.yml/badge.svg)
+![Main](https://github.com/hmmdeif/homemade-brooches/actions/workflows/test.yml/badge.svg)
 
 ## Build
 
@@ -19,7 +19,7 @@ Uses env vars from a file `.env`. Copy and rename `.env.sample` and fill in the 
 source .env
 
 # To deploy and verify our contract
-forge script script/EstforBroochNFT.s.sol:DeployBrooches --rpc-url $RPC_URL --broadcast -vvvv --slow
+forge script script/HomemadeBroochNFT.s.sol:DeployBrooches --rpc-url $RPC_URL --broadcast -vvvv --slow
 ```
 
 ## Troubleshooting

@@ -3,11 +3,11 @@ pragma solidity ^0.8.23;
 
 import "forge-std/Script.sol";
 
-import {EstforBroochNFT} from "src/EstforBroochNFT.sol";
+import {HomemadeBroochNFT} from "src/HomemadeBroochNFT.sol";
 
 contract DeployBrooches is Script {
 
-    EstforBroochNFT public nft;
+    HomemadeBroochNFT public nft;
 
     function run() public {
         // private key for deployment
@@ -17,7 +17,7 @@ contract DeployBrooches is Script {
 
         vm.startBroadcast(pk);
 
-        nft = new EstforBroochNFT(owner, "https://estfor.com/brooches/{id}.json");
+        nft = new HomemadeBroochNFT(owner, "ipfs://Qmeb6LJ57G4emTcRagxwEakgvwvSrqv6693mkBx7F9aaWA/assets/brooches/{id}.json");
 
         vm.stopBroadcast();
 
