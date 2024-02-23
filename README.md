@@ -20,6 +20,9 @@ source .env
 
 # To deploy and verify our contract
 forge script script/HomemadeBroochNFT.s.sol:DeployBrooches --rpc-url $RPC_URL --broadcast -vvvv --slow
+
+# To verify
+forge script script/HomemadeBroochNFT.s.sol:DeployBrooches --rpc-url $RPC_URL --verify -vvvv --resume
 ```
 
 ## Troubleshooting

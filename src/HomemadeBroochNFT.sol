@@ -75,6 +75,10 @@ contract HomemadeBroochNFT is ERC1155, Ownable, IERC2981, IHomemadeBroochNFT {
         baseTokenPrice[id] = basePrice;
     }
 
+    function transferOwnership(address newOwner) public override(IHomemadeBroochNFT, Ownable) onlyOwner {
+        super._transferOwnership(newOwner);
+    }
+
     // END OWNABLE
 
     receive() external payable {}
