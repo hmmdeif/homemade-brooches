@@ -19,7 +19,8 @@ contract BroochUpgrader is IBroochUpgrader, ERC165, Ownable {
 
     function upgradeBrooch(uint256 tokenId) public payable {
         require(tokenUnlocked[tokenId], "Upgrade: token locked");
-        require(msg.value == upgradePrices[tokenId], "Upgrade: wrong msg.value");
+        uint256 total = (_homemadeBrooch.tokenSupply(tokenId) * 1e18) + upgradePrices[tokenId];
+        require(msg.value == total, "Upgrade: wrong msg.value");
         _homemadeBrooch.safeTransferFrom(msg.sender, address(this), tokenId - 1, 1, "");
         _homemadeBrooch.setTokenUnlock(tokenId, true, upgradePrices[tokenId]);
 

@@ -162,6 +162,33 @@ contract BroochUpgraderTest is Test {
         assertEq(address(nft).balance, 31 ether);
     }
 
+    function test_UpgradeTokenPriceIncreases() public {
+        _deploy();
+
+        vm.deal(address(user), 42 ether);
+        vm.prank(owner);
+        upgrader.setTokenUpgradePrice(2, true, 10 ether);
+
+        uint256[] memory ids = new uint256[](1);
+        ids[0] = 1;
+
+        uint256[] memory values = new uint256[](1);
+        values[0] = 2;
+
+        vm.prank(user);
+        nft.mintBatch{ value: 21 ether }(user, ids, values, "");
+        vm.prank(user);
+        nft.setApprovalForAll(address(upgrader), true);
+        vm.prank(user);
+        upgrader.upgradeBrooch{ value: 10 ether }(2);
+        vm.prank(user);
+        upgrader.upgradeBrooch{ value: 11 ether }(2);
+        assertEq(nft.balanceOf(user, 1), 0); // had 2, now 0
+        assertEq(nft.balanceOf(user, 2), 2);
+        assertEq(nft.balanceOf(address(upgrader), 1), 2);
+        assertEq(address(nft).balance, 42 ether);
+    }
+
     function test_RevertSetURIWhenNotOwner() public {
         _deploy();
 

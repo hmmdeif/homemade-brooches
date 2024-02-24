@@ -9,4 +9,5 @@ interface IHomemadeBroochNFT is IERC1155 {
     function withdraw(address to) external;
     function setURI(string memory newuri) external;
     function transferOwnership(address newOwner) external;
+    function tokenSupply(uint256 id) external view returns (uint256);
 }
