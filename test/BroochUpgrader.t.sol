@@ -105,7 +105,7 @@ contract BroochUpgraderTest is Test {
     function test_RevertUpgradeWhenTokenLocked() public {
         _deploy();
 
-        vm.deal(address(user), 10 ether);
+        vm.deal(user, 10 ether);
         vm.expectRevert("Upgrade: token locked");
         vm.prank(user);
         upgrader.upgradeBrooch{ value: 10 ether }(1);
@@ -114,7 +114,7 @@ contract BroochUpgraderTest is Test {
     function test_RevertUpgradeWhenIncorrectAmount() public {
         _deploy();
 
-        vm.deal(address(user), 10 ether);
+        vm.deal(user, 10 ether);
         vm.prank(owner);        
         upgrader.setTokenUpgradePrice(2, true, 10 ether);
         vm.expectRevert("Upgrade: wrong msg.value");
@@ -125,7 +125,7 @@ contract BroochUpgraderTest is Test {
     function test_RevertUpgradeTokenWhenUserDoesNotOwnOriginal() public {
         _deploy();
 
-        vm.deal(address(user), 10 ether);
+        vm.deal(user, 10 ether);
         vm.prank(owner);
         upgrader.setTokenUpgradePrice(2, true, 10 ether);
 
@@ -140,7 +140,7 @@ contract BroochUpgraderTest is Test {
     function test_UpgradeToken() public {
         _deploy();
 
-        vm.deal(address(user), 31 ether);
+        vm.deal(user, 31 ether);
         vm.prank(owner);
         upgrader.setTokenUpgradePrice(2, true, 10 ether);
 
@@ -165,7 +165,7 @@ contract BroochUpgraderTest is Test {
     function test_UpgradeTokenPriceIncreases() public {
         _deploy();
 
-        vm.deal(address(user), 42 ether);
+        vm.deal(user, 42 ether);
         vm.prank(owner);
         upgrader.setTokenUpgradePrice(2, true, 10 ether);
 

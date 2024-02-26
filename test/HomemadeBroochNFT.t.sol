@@ -45,7 +45,7 @@ contract HomemadeBroochNFTTest is Test {
         vm.prank(owner);
         nft.withdraw(owner);
         assertEq(address(nft).balance, 0);
-        assertEq(address(owner).balance, 1 ether);
+        assertEq(owner.balance, 1 ether);
     }
 
     function test_RevertSetURIWhenNotOwner() public {

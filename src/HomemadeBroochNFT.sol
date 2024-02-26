@@ -69,7 +69,7 @@ contract HomemadeBroochNFT is ERC1155, Ownable, IERC2981, IHomemadeBroochNFT {
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
     }
-
+    
     function setTokenUnlock(uint256 id, bool unlocked, uint256 basePrice) public onlyOwner {
         tokenUnlocked[id] = unlocked;
         baseTokenPrice[id] = basePrice;
