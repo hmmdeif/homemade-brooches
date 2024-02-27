@@ -41,7 +41,7 @@ contract BroochUpgraderTest is Test {
         _deploy();
 
         vm.deal(address(upgrader), 1 ether);
-        vm.prank(user);        
+        vm.prank(user);
         bytes4 selector = bytes4(keccak256("OwnableUnauthorizedAccount(address)"));
         vm.expectRevert(abi.encodeWithSelector(selector, user));
         upgrader.withdraw(user);
@@ -70,7 +70,7 @@ contract BroochUpgraderTest is Test {
     function test_RevertTransferBroochOwnershipWhenNotOwner() public {
         _deploy();
 
-        vm.prank(user);        
+        vm.prank(user);
         bytes4 selector = bytes4(keccak256("OwnableUnauthorizedAccount(address)"));
         vm.expectRevert(abi.encodeWithSelector(selector, user));
         upgrader.transferBroochOwnership(user);
@@ -87,7 +87,7 @@ contract BroochUpgraderTest is Test {
     function test_RevertSetTokenUpgradePriceWhenNotOwner() public {
         _deploy();
 
-        vm.prank(user);        
+        vm.prank(user);
         bytes4 selector = bytes4(keccak256("OwnableUnauthorizedAccount(address)"));
         vm.expectRevert(abi.encodeWithSelector(selector, user));
         upgrader.setTokenUpgradePrice(1, true, 10 ether);
@@ -96,7 +96,7 @@ contract BroochUpgraderTest is Test {
     function test_SetTokenUpgradePrice() public {
         _deploy();
 
-        vm.prank(owner);        
+        vm.prank(owner);
         upgrader.setTokenUpgradePrice(1, true, 10 ether);
         assertEq(upgrader.tokenUnlocked(1), true);
         assertEq(upgrader.tokenUnlocked(2), false);
@@ -108,18 +108,18 @@ contract BroochUpgraderTest is Test {
         vm.deal(user, 10 ether);
         vm.expectRevert("Upgrade: token locked");
         vm.prank(user);
-        upgrader.upgradeBrooch{ value: 10 ether }(1);
+        upgrader.upgradeBrooch{value: 10 ether}(1);
     }
 
     function test_RevertUpgradeWhenIncorrectAmount() public {
         _deploy();
 
         vm.deal(user, 10 ether);
-        vm.prank(owner);        
+        vm.prank(owner);
         upgrader.setTokenUpgradePrice(2, true, 10 ether);
         vm.expectRevert("Upgrade: wrong msg.value");
         vm.prank(user);
-        upgrader.upgradeBrooch{ value: 1 ether }(2);
+        upgrader.upgradeBrooch{value: 1 ether}(2);
     }
 
     function test_RevertUpgradeTokenWhenUserDoesNotOwnOriginal() public {
@@ -134,7 +134,7 @@ contract BroochUpgraderTest is Test {
 
         vm.expectRevert();
         vm.prank(user);
-        upgrader.upgradeBrooch{ value: 10 ether }(2);
+        upgrader.upgradeBrooch{value: 10 ether}(2);
     }
 
     function test_UpgradeToken() public {
@@ -151,11 +151,11 @@ contract BroochUpgraderTest is Test {
         values[0] = 2;
 
         vm.prank(user);
-        nft.mintBatch{ value: 21 ether }(user, ids, values, "");
+        nft.mintBatch{value: 21 ether}(user, ids, values, "");
         vm.prank(user);
         nft.setApprovalForAll(address(upgrader), true);
         vm.prank(user);
-        upgrader.upgradeBrooch{ value: 10 ether }(2);
+        upgrader.upgradeBrooch{value: 10 ether}(2);
         assertEq(nft.balanceOf(user, 1), 1); // had 2, now 1
         assertEq(nft.balanceOf(user, 2), 1);
         assertEq(nft.balanceOf(address(upgrader), 1), 1);
@@ -176,13 +176,13 @@ contract BroochUpgraderTest is Test {
         values[0] = 2;
 
         vm.prank(user);
-        nft.mintBatch{ value: 21 ether }(user, ids, values, "");
+        nft.mintBatch{value: 21 ether}(user, ids, values, "");
         vm.prank(user);
         nft.setApprovalForAll(address(upgrader), true);
         vm.prank(user);
-        upgrader.upgradeBrooch{ value: 10 ether }(2);
+        upgrader.upgradeBrooch{value: 10 ether}(2);
         vm.prank(user);
-        upgrader.upgradeBrooch{ value: 11 ether }(2);
+        upgrader.upgradeBrooch{value: 11 ether}(2);
         assertEq(nft.balanceOf(user, 1), 0); // had 2, now 0
         assertEq(nft.balanceOf(user, 2), 2);
         assertEq(nft.balanceOf(address(upgrader), 1), 2);
@@ -192,7 +192,7 @@ contract BroochUpgraderTest is Test {
     function test_RevertSetURIWhenNotOwner() public {
         _deploy();
 
-        vm.prank(user);        
+        vm.prank(user);
         bytes4 selector = bytes4(keccak256("OwnableUnauthorizedAccount(address)"));
         vm.expectRevert(abi.encodeWithSelector(selector, user));
         upgrader.setURI("");
@@ -201,7 +201,7 @@ contract BroochUpgraderTest is Test {
     function test_SetURI() public {
         _deploy();
 
-        vm.prank(owner);        
+        vm.prank(owner);
         upgrader.setURI("test");
         assertEq(nft.uri(0), "test");
     }

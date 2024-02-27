@@ -1,29 +1,43 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Multicall} from "@openzeppelin/contracts/utils/Multicall.sol";
+import {UUPSUpgradeable} from "@oz-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
+import {OwnableUpgradeable} from "@oz-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import {MulticallUpgradeable} from "@oz-upgradeable/contracts/utils/MulticallUpgradeable.sol";
 import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
-import {DSProxyFactory} from "./DS/DSProxyFactory.sol";
-import {IDSProxy} from "./DS/IDSProxy.sol";
+import {EPProxyFactory} from "./proxy/EPProxyFactory.sol";
+import {IEPProxy} from "./proxy/IEPProxy.sol";
 
-contract FactoryRegistry is Ownable, Multicall {
-
+contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable {
     IHomemadeBroochNFT private _homemadeBrooch;
-    DSProxyFactory private _proxyFactory;   
+    EPProxyFactory private _proxyFactory;
 
     mapping(address => mapping(uint256 => address)) private _ownedProxyAddresses;
     mapping(address => uint256) private _ownedAddressIndex;
     uint256 private _addressCount;
 
-    constructor(address _owner, address homemadeBrooch, address proxyFactory) Ownable(_owner) {
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address _owner, address homemadeBrooch, address proxyFactory) external initializer {
+        __UUPSUpgradeable_init();
+        __Ownable_init(_owner);
+        __Multicall_init();
+
         _homemadeBrooch = IHomemadeBroochNFT(homemadeBrooch);
-        _proxyFactory = DSProxyFactory(proxyFactory);
+        _proxyFactory = EPProxyFactory(proxyFactory);
+    }
+
+    modifier proxyOwner(address proxy) {
+        uint256 index = _ownedAddressIndex[proxy];
+        require(_ownedProxyAddresses[msg.sender][index] == proxy, "FactoryRegistry: not owned proxy");
+        _;
     }
 
     function createProxy() public {
         require(_homemadeBrooch.balanceOf(msg.sender, 1) > 0, "FactoryRegistry: no ruby brooch");
-        IDSProxy proxy = _proxyFactory.build(address(this));
+        IEPProxy proxy = IEPProxy(_proxyFactory.build(address(this)));
 
         _ownedProxyAddresses[msg.sender][_addressCount] = address(proxy);
         _ownedAddressIndex[address(proxy)] = _addressCount;
@@ -31,18 +45,20 @@ contract FactoryRegistry is Ownable, Multicall {
     }
 
     function executeSavedTransactions(address proxy) public payable {
-        IDSProxy dsProxy = IDSProxy(proxy);
-        IDSProxy.Transaction[] memory transactions = dsProxy.getAllSavedTransactions();
-        uint256 count = dsProxy.getTransactionCount();
+        IEPProxy EPProxy = IEPProxy(proxy);
+        IEPProxy.Transaction[] memory transactions = EPProxy.getAllSavedTransactions();
+        uint256 count = EPProxy.getTransactionCount();
         for (uint256 i = 0; i < count; i++) {
-           dsProxy.execute{ value: msg.value }(transactions[i].to, transactions[i].data);
+            EPProxy.execute{value: msg.value}(transactions[i].to, transactions[i].data);
         }
     }
 
-    function setTransaction(address proxy, uint256 order, address to, bytes memory data) public {
-        uint256 index = _ownedAddressIndex[proxy];
-        require(_ownedProxyAddresses[msg.sender][index] == proxy, "FactoryRegistry: not owned proxy");
-        IDSProxy(proxy).setTransaction(order, to, data);
+    function execute(address proxy, address target, bytes memory data) public payable proxyOwner(proxy) {
+        IEPProxy(proxy).execute{value: msg.value}(target, data);
+    }
+
+    function setTransaction(address proxy, uint256 order, address to, bytes memory data) public proxyOwner(proxy) {
+        IEPProxy(proxy).setTransaction(order, to, data);
     }
 
     function proxyAddressOfOwnerByIndex(address owner, uint256 index) public view returns (address) {
@@ -53,9 +69,8 @@ contract FactoryRegistry is Ownable, Multicall {
         return _addressCount;
     }
 
-    function transferProxyOwner(address proxy, address newOwner) public {
+    function transferProxyOwner(address proxy, address newOwner) public proxyOwner(proxy) {
         uint256 index = _ownedAddressIndex[proxy];
-        require(_ownedProxyAddresses[msg.sender][index] == proxy, "FactoryRegistry: not owned proxy");
         _ownedProxyAddresses[newOwner][index] = proxy;
         _ownedProxyAddresses[msg.sender][index] = address(0);
     }
@@ -63,4 +78,7 @@ contract FactoryRegistry is Ownable, Multicall {
     fallback() external payable {}
 
     receive() external payable {}
+
+    // solhint-disable-next-line no-empty-blocks
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

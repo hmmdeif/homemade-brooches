@@ -3,13 +3,17 @@ pragma solidity ^0.8.23;
 
 import "forge-std/Test.sol";
 
+import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+
 import {HomemadeBroochNFT} from "src/HomemadeBroochNFT.sol";
 import {FactoryRegistry} from "src/FactoryRegistry.sol";
-import {DSAuthority} from "src/DS/DSAuthority.sol";
-import {DSProxyFactory} from "src/DS/DSProxyFactory.sol";
-import {DSProxy} from "src/DS/DSProxy.sol";
+import {EPAuthority} from "src/proxy/EPAuthority.sol";
+import {EPProxyFactory} from "src/proxy/EPProxyFactory.sol";
+import {EPProxy} from "src/proxy/EPProxy.sol";
+import {Addresses} from "src/Addresses.sol";
 
-contract DSProxyTest is Test {
+contract EPProxyTest is Addresses, Test {
     uint256 public userKey = 1;
     uint256 public ownerKey = 2;
     uint256 public unauthUserKey = 3;
@@ -26,9 +30,14 @@ contract DSProxyTest is Test {
         vm.prank(owner);
         nft.setTokenUnlock(1, true, 10 ether);
 
-        DSAuthority authority = new DSAuthority(owner);
-        DSProxyFactory proxyFactory = new DSProxyFactory(address(authority));
-        registry = new FactoryRegistry(owner, address(nft), address(proxyFactory));
+        EPAuthority authority = new EPAuthority(owner);
+        EPProxy beaconImpl = new EPProxy();
+        UpgradeableBeacon beacon = new UpgradeableBeacon(address(beaconImpl), owner);
+        EPProxyFactory proxyFactory = new EPProxyFactory(address(authority), address(beacon));
+        FactoryRegistry impl = new FactoryRegistry();
+        ERC1967Proxy registryProxy = new ERC1967Proxy(payable(impl), "");
+        registry = FactoryRegistry(payable(registryProxy));
+        registry.initialize(owner, address(nft), address(proxyFactory));
 
         vm.prank(owner);
         authority.setAuthority(user, true);
@@ -46,7 +55,7 @@ contract DSProxyTest is Test {
         values[0] = 1;
 
         vm.prank(user);
-        nft.mintBatch{ value: 10 ether }(user, ids, values, "");
+        nft.mintBatch{value: 10 ether}(user, ids, values, "");
 
         vm.prank(user);
         registry.createProxy();
@@ -67,9 +76,9 @@ contract DSProxyTest is Test {
         _deploy();
         _mintBroochAndCreateProxy();
 
-        DSProxy proxy = DSProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
         vm.prank(unauthUser);
-        vm.expectRevert("DSAuth: access denied");
+        vm.expectRevert("EPAuth: access denied");
         proxy.execute(address(20), "");
     }
 
@@ -77,7 +86,7 @@ contract DSProxyTest is Test {
         _deploy();
         _mintBroochAndCreateProxy();
 
-        DSProxy proxy = DSProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
         vm.prank(user);
         vm.expectCall(address(nft), abi.encodeCall(nft.balanceOf, (user, 1)));
         proxy.execute(address(nft), abi.encodeCall(nft.balanceOf, (user, 1))); // delegate calls can't return varlable length data so don't check
@@ -87,9 +96,9 @@ contract DSProxyTest is Test {
         _deploy();
         _mintBroochAndCreateProxy();
 
-        DSProxy proxy = DSProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
         vm.prank(unauthUser);
-        vm.expectRevert("DSAuth: access denied");
+        vm.expectRevert("EPAuth: access denied");
         proxy.setTransaction(0, address(0), "");
     }
 
@@ -97,10 +106,10 @@ contract DSProxyTest is Test {
         _deploy();
         _mintBroochAndCreateProxy();
 
-        DSProxy proxy = DSProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
         vm.prank(user);
         proxy.setTransaction(0, address(0), "");
-        DSProxy.Transaction[] memory transactions = proxy.getAllSavedTransactions();
+        EPProxy.Transaction[] memory transactions = proxy.getAllSavedTransactions();
         assertEq(transactions.length, 1);
         assertEq(proxy.getTransactionCount(), 1);
     }
@@ -109,15 +118,15 @@ contract DSProxyTest is Test {
         _deploy();
         _mintBroochAndCreateProxy();
 
-        DSProxy proxy = DSProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
 
         bytes[] memory data = new bytes[](2);
         data[0] = abi.encodeWithSelector(proxy.setTransaction.selector, 0, address(0), "");
         data[1] = abi.encodeWithSelector(proxy.setTransaction.selector, 1, address(0), "");
-        
+
         vm.prank(user);
         proxy.multicall(data);
-        DSProxy.Transaction[] memory transactions = proxy.getAllSavedTransactions();
+        EPProxy.Transaction[] memory transactions = proxy.getAllSavedTransactions();
         assertEq(transactions.length, 2);
         assertEq(proxy.getTransactionCount(), 2);
     }
@@ -126,14 +135,14 @@ contract DSProxyTest is Test {
         _deploy();
         _mintBroochAndCreateProxy();
 
-        DSProxy proxy = DSProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
         vm.prank(user);
         proxy.setTransaction(0, address(0), "");
         vm.prank(user);
         proxy.setTransaction(1, address(1), "");
         vm.prank(user);
         proxy.setTransaction(0, address(2), "");
-        DSProxy.Transaction[] memory transactions = proxy.getAllSavedTransactions();
+        EPProxy.Transaction[] memory transactions = proxy.getAllSavedTransactions();
         assertEq(transactions.length, 2);
         assertEq(proxy.getTransactionCount(), 2);
         assertEq(transactions[0].to, address(2));

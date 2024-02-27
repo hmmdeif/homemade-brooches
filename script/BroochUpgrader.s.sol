@@ -6,7 +6,6 @@ import "forge-std/Script.sol";
 import {BroochUpgrader} from "src/BroochUpgrader.sol";
 
 contract DeployBroochUpgrader is Script {
-
     BroochUpgrader public upgrader;
 
     function run() public {

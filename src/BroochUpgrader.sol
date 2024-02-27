@@ -2,12 +2,11 @@
 pragma solidity ^0.8.23;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {ERC1155Holder} from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
 import {IBroochUpgrader} from "./interfaces/IBroochUpgrader.sol";
 
-contract BroochUpgrader is IBroochUpgrader, ERC165, Ownable {
-
+contract BroochUpgrader is ERC1155Holder, Ownable, IBroochUpgrader {
     IHomemadeBroochNFT private _homemadeBrooch;
 
     mapping(uint256 => bool) public tokenUnlocked;
@@ -30,7 +29,7 @@ contract BroochUpgrader is IBroochUpgrader, ERC165, Ownable {
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = 1;
 
-        _homemadeBrooch.mintBatch{ value: msg.value }(msg.sender, ids, amounts, "");
+        _homemadeBrooch.mintBatch{value: msg.value}(msg.sender, ids, amounts, "");
         _homemadeBrooch.setTokenUnlock(tokenId, false, upgradePrices[tokenId]);
     }
 
@@ -55,26 +54,6 @@ contract BroochUpgrader is IBroochUpgrader, ERC165, Ownable {
     }
 
     // END OWNABLE
-
-    function onERC1155Received(
-        address,
-        address,
-        uint256,
-        uint256,
-        bytes calldata
-    ) external pure override returns (bytes4) {
-        return this.onERC1155Received.selector;
-    }
-
-    function onERC1155BatchReceived(
-        address,
-        address,
-        uint256[] calldata,
-        uint256[] calldata,
-        bytes calldata
-    ) external pure override returns (bytes4) {
-        return this.onERC1155BatchReceived.selector;
-    }
 
     receive() external payable {}
 

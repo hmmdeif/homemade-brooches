@@ -6,7 +6,6 @@ import "forge-std/Script.sol";
 import {HomemadeBroochNFT} from "src/HomemadeBroochNFT.sol";
 
 contract DeployBrooches is Script {
-
     HomemadeBroochNFT public nft;
 
     function run() public {
@@ -17,7 +16,8 @@ contract DeployBrooches is Script {
 
         vm.startBroadcast(pk);
 
-        nft = new HomemadeBroochNFT(owner, "ipfs://Qmeb6LJ57G4emTcRagxwEakgvwvSrqv6693mkBx7F9aaWA/assets/brooches/{id}.json");
+        nft =
+        new HomemadeBroochNFT(owner, "ipfs://Qmeb6LJ57G4emTcRagxwEakgvwvSrqv6693mkBx7F9aaWA/assets/brooches/{id}.json");
 
         vm.stopBroadcast();
 

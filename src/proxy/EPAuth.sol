@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.23;
 
-import {DSAuthority} from "./DSAuthority.sol";
+import {EPAuthority} from "./EPAuthority.sol";
 
-abstract contract DSAuth {
+abstract contract EPAuth {
     event LogSetOwner(address indexed owner);
 
     address public owner;
-    DSAuthority public authority;
+    EPAuthority public authority;
 
     function setOwner(address owner_) public auth {
         owner = owner_;
@@ -15,7 +15,7 @@ abstract contract DSAuth {
     }
 
     modifier auth() {
-        require(isAuthorized(msg.sender), "DSAuth: access denied");
+        require(isAuthorized(msg.sender), "EPAuth: access denied");
         _;
     }
 

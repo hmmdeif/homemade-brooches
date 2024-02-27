@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract DSAuthority is Ownable {
+contract EPAuthority is Ownable {
     event LogSetAuthority(address indexed authority, bool authorized);
 
     mapping(address => bool) private _authorized;
@@ -28,7 +28,7 @@ contract DSAuthority is Ownable {
     }
 
     modifier onlyAuthority() {
-        require(isAuthorized(msg.sender), "DSAuthority: access denied");
+        require(isAuthorized(msg.sender), "EPAuthority: access denied");
         _;
     }
 }
