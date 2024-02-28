@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 
@@ -15,17 +15,6 @@ contract HomemadeBroochNFTTest is Test {
 
     function _deploy() internal {
         nft = new HomemadeBroochNFT(owner, "");
-    }
-
-    function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
-        // If the _res length is less than 68, then the transaction failed silently (without a revert message)
-        if (_returnData.length < 68) return "Transaction reverted silently";
-
-        assembly {
-            // Slice the sighash.
-            _returnData := add(_returnData, 0x04)
-        }
-        return abi.decode(_returnData, (string)); // All that remains is the revert string
     }
 
     function test_RevertWithdrawWhenNotOwner() public {
@@ -69,7 +58,8 @@ contract HomemadeBroochNFTTest is Test {
         _deploy();
 
         vm.prank(user);
-        vm.expectRevert("Mint: zero address");
+        bytes4 selector = bytes4(keccak256("ZeroAddress()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
         nft.mintBatch(address(0), new uint256[](0), new uint256[](0), "");
     }
 
@@ -77,7 +67,8 @@ contract HomemadeBroochNFTTest is Test {
         _deploy();
 
         vm.prank(user);
-        vm.expectRevert("Mint: too little");
+        bytes4 selector = bytes4(keccak256("LengthMismatch(uint256,uint256)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, 0, 0));
         nft.mintBatch(user, new uint256[](0), new uint256[](0), "");
     }
 
@@ -85,7 +76,8 @@ contract HomemadeBroochNFTTest is Test {
         _deploy();
 
         vm.prank(user);
-        vm.expectRevert("Mint: length mismatch");
+        bytes4 selector = bytes4(keccak256("LengthMismatch(uint256,uint256)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, 1, 0));
         nft.mintBatch(user, new uint256[](1), new uint256[](0), "");
     }
 
@@ -93,7 +85,8 @@ contract HomemadeBroochNFTTest is Test {
         _deploy();
 
         vm.prank(user);
-        vm.expectRevert("Mint: token locked");
+        bytes4 selector = bytes4(keccak256("TokenLocked(uint256,bool)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, 1, false));
 
         uint256[] memory ids = new uint256[](1);
         ids[0] = 1;
@@ -130,7 +123,8 @@ contract HomemadeBroochNFTTest is Test {
 
         vm.deal(user, 10 ether);
         vm.prank(user);
-        vm.expectRevert("Mint: wrong msg.value");
+        bytes4 selector = bytes4(keccak256("WrongMsgValue(uint256,uint256)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, 1 ether, 10 ether));
 
         uint256[] memory ids = new uint256[](1);
         ids[0] = 1;
@@ -168,7 +162,8 @@ contract HomemadeBroochNFTTest is Test {
 
         vm.deal(user, 10 ether);
         vm.prank(user);
-        vm.expectRevert("Mint: wrong msg.value");
+        bytes4 selector = bytes4(keccak256("WrongMsgValue(uint256,uint256)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, 10 ether, 33 ether));
 
         uint256[] memory ids = new uint256[](1);
         ids[0] = 1;
@@ -209,7 +204,8 @@ contract HomemadeBroochNFTTest is Test {
 
         vm.deal(user, 20 ether);
         vm.prank(user);
-        vm.expectRevert("Mint: wrong msg.value");
+        bytes4 selector = bytes4(keccak256("WrongMsgValue(uint256,uint256)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, 20 ether, 30 ether));
 
         uint256[] memory ids = new uint256[](2);
         ids[0] = 1;

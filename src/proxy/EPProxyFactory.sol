@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import {IEPProxy} from "./IEPProxy.sol";
@@ -10,7 +10,7 @@ import {EPAuthority} from "./EPAuthority.sol";
 contract EPProxyFactory {
     event Created(address indexed sender, address indexed owner, address proxy);
 
-    mapping(address => bool) public isProxy;
+    mapping(address addr => bool isProxy) public isProxy;
 
     EPAuthority public authority;
     address public beacon;

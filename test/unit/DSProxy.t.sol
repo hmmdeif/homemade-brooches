@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 
@@ -61,24 +61,14 @@ contract EPProxyTest is Addresses, Test {
         registry.createProxy();
     }
 
-    function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
-        // If the _res length is less than 68, then the transaction failed silently (without a revert message)
-        if (_returnData.length < 68) return "Transaction reverted silently";
-
-        assembly {
-            // Slice the sighash.
-            _returnData := add(_returnData, 0x04)
-        }
-        return abi.decode(_returnData, (string)); // All that remains is the revert string
-    }
-
     function test_RevertExecuteNotAuthority() public {
         _deploy();
         _mintBroochAndCreateProxy();
 
         EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
         vm.prank(unauthUser);
-        vm.expectRevert("EPAuth: access denied");
+        bytes4 selector = bytes4(keccak256("AccessDenied()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
         proxy.execute(address(20), "");
     }
 
@@ -98,7 +88,8 @@ contract EPProxyTest is Addresses, Test {
 
         EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
         vm.prank(unauthUser);
-        vm.expectRevert("EPAuth: access denied");
+        bytes4 selector = bytes4(keccak256("AccessDenied()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
         proxy.setTransaction(0, address(0), "");
     }
 

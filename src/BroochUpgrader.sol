@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC1155Holder} from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
@@ -7,19 +7,27 @@ import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
 import {IBroochUpgrader} from "./interfaces/IBroochUpgrader.sol";
 
 contract BroochUpgrader is ERC1155Holder, Ownable, IBroochUpgrader {
+
+    error TokenLocked(uint256 tokenId, bool unlocked);
+    error WrongMsgValue(uint256 given, uint256 actual);
+
     IHomemadeBroochNFT private _homemadeBrooch;
 
-    mapping(uint256 => bool) public tokenUnlocked;
-    mapping(uint256 => uint256) public upgradePrices;
+    mapping(uint256 tokenId => bool isUnlocked) public tokenUnlocked;
+    mapping(uint256 tokenId => uint256 amount) public upgradePrices;
 
     constructor(address _owner, address homemadeBrooch) Ownable(_owner) {
         _homemadeBrooch = IHomemadeBroochNFT(homemadeBrooch);
     }
 
     function upgradeBrooch(uint256 tokenId) public payable {
-        require(tokenUnlocked[tokenId], "Upgrade: token locked");
+        if (!tokenUnlocked[tokenId]) {
+            revert TokenLocked(tokenId, tokenUnlocked[tokenId]);
+        }
         uint256 total = (_homemadeBrooch.tokenSupply(tokenId) * 1e18) + upgradePrices[tokenId];
-        require(msg.value == total, "Upgrade: wrong msg.value");
+        if (msg.value != total) {
+            revert WrongMsgValue(msg.value, total);
+        }
         _homemadeBrooch.safeTransferFrom(msg.sender, address(this), tokenId - 1, 1, "");
         _homemadeBrooch.setTokenUnlock(tokenId, true, upgradePrices[tokenId]);
 
@@ -56,6 +64,4 @@ contract BroochUpgrader is ERC1155Holder, Ownable, IBroochUpgrader {
     // END OWNABLE
 
     receive() external payable {}
-
-    fallback() external payable {}
 }

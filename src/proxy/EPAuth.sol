@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import {EPAuthority} from "./EPAuthority.sol";
 
 abstract contract EPAuth {
     event LogSetOwner(address indexed owner);
+
+    error AccessDenied();
 
     address public owner;
     EPAuthority public authority;
@@ -15,7 +17,9 @@ abstract contract EPAuth {
     }
 
     modifier auth() {
-        require(isAuthorized(msg.sender), "EPAuth: access denied");
+        if (!isAuthorized(msg.sender)) {
+            revert AccessDenied();
+        }
         _;
     }
 

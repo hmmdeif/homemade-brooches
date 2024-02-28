@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 
@@ -24,17 +24,6 @@ contract BroochUpgraderTest is Test {
 
         vm.prank(owner);
         nft.transferOwnership(address(upgrader));
-    }
-
-    function _getRevertMsg(bytes memory _returnData) internal pure returns (string memory) {
-        // If the _res length is less than 68, then the transaction failed silently (without a revert message)
-        if (_returnData.length < 68) return "Transaction reverted silently";
-
-        assembly {
-            // Slice the sighash.
-            _returnData := add(_returnData, 0x04)
-        }
-        return abi.decode(_returnData, (string)); // All that remains is the revert string
     }
 
     function test_RevertWithdrawWhenNotOwner() public {
@@ -106,7 +95,8 @@ contract BroochUpgraderTest is Test {
         _deploy();
 
         vm.deal(user, 10 ether);
-        vm.expectRevert("Upgrade: token locked");
+        bytes4 selector = bytes4(keccak256("TokenLocked(uint256,bool)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, 1, false));
         vm.prank(user);
         upgrader.upgradeBrooch{value: 10 ether}(1);
     }
@@ -117,7 +107,8 @@ contract BroochUpgraderTest is Test {
         vm.deal(user, 10 ether);
         vm.prank(owner);
         upgrader.setTokenUpgradePrice(2, true, 10 ether);
-        vm.expectRevert("Upgrade: wrong msg.value");
+        bytes4 selector = bytes4(keccak256("WrongMsgValue(uint256,uint256)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, 1 ether, 10 ether));
         vm.prank(user);
         upgrader.upgradeBrooch{value: 1 ether}(2);
     }

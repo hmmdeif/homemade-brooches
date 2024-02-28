@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 contract Addresses {
     address internal constant PLAYER_NFT = 0xB809Ed839c691D465e2EC45E1BCb5E5adED50Fb9;

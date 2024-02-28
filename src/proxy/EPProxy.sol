@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import {Multicall} from "@openzeppelin/contracts/utils/Multicall.sol";
 import {ERC1155Holder} from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
@@ -15,7 +15,10 @@ import {IEPProxy} from "./IEPProxy.sol";
 // the proxy can be changed, this allows for dynamic ownership models
 // i.e. a multisig
 contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
-    mapping(uint256 => Transaction) private _transactions; // owner set transactions to be executed by any keeper
+
+    error ZeroAddress();
+
+    mapping(uint256 order => Transaction transaction) private _transactions; // owner set transactions to be executed by any keeper
     uint256 private _transactionCount;
 
     constructor() {
@@ -28,7 +31,9 @@ contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
     }
 
     function execute(address _target, bytes memory _data) public payable override auth {
-        require(_target != address(0x0), "0A");
+        if (_target == address(0x0)) {
+            revert ZeroAddress();
+        }
 
         (bool success, bytes memory response) = _target.call(_data);
         require(success, string(response));
@@ -36,7 +41,9 @@ contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
 
     // use if you need to call an action contract
     function executeDelegate(address _target, bytes memory _data) public payable override auth {
-        require(_target != address(0x0), "0A");
+        if (_target == address(0x0)) {
+            revert ZeroAddress();
+        }
 
         (bool success, bytes memory response) = _target.delegatecall(_data);
         require(success, string(response));
@@ -61,8 +68,6 @@ contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
     function getTransactionCount() public view override returns (uint256) {
         return _transactionCount;
     }
-
-    fallback() external payable {}
 
     receive() external payable {}
 }

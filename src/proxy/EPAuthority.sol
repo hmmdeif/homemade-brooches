@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract EPAuthority is Ownable {
     event LogSetAuthority(address indexed authority, bool authorized);
 
-    mapping(address => bool) private _authorized;
+    error AccessDenied();
+
+    mapping(address addr => bool isAuthorized) private _authorized;
 
     constructor(address owner) Ownable(owner) {}
 
@@ -28,7 +30,9 @@ contract EPAuthority is Ownable {
     }
 
     modifier onlyAuthority() {
-        require(isAuthorized(msg.sender), "EPAuthority: access denied");
+        if (!isAuthorized(msg.sender)) {
+            revert AccessDenied();
+        }
         _;
     }
 }

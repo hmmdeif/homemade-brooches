@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 import {UUPSUpgradeable} from "@oz-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {OwnableUpgradeable} from "@oz-upgradeable/contracts/access/OwnableUpgradeable.sol";
@@ -9,11 +9,15 @@ import {EPProxyFactory} from "./proxy/EPProxyFactory.sol";
 import {IEPProxy} from "./proxy/IEPProxy.sol";
 
 contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable {
+
+    error NotProxyOwner(address, address);
+    error NoRubyBrooch(address);
+
     IHomemadeBroochNFT private _homemadeBrooch;
     EPProxyFactory private _proxyFactory;
 
-    mapping(address => mapping(uint256 => address)) private _ownedProxyAddresses;
-    mapping(address => uint256) private _ownedAddressIndex;
+    mapping(address owner => mapping(uint256 proxyId => address proxy)) private _ownedProxyAddresses;
+    mapping(address proxy => uint256 proxyId) private _ownedAddressIndex;
     uint256 private _addressCount;
 
     constructor() {
@@ -31,12 +35,16 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
 
     modifier proxyOwner(address proxy) {
         uint256 index = _ownedAddressIndex[proxy];
-        require(_ownedProxyAddresses[msg.sender][index] == proxy, "FactoryRegistry: not owned proxy");
+        if(_ownedProxyAddresses[msg.sender][index] != proxy) {
+            revert NotProxyOwner(msg.sender, proxy);
+        }
         _;
     }
 
     function createProxy() public {
-        require(_homemadeBrooch.balanceOf(msg.sender, 1) > 0, "FactoryRegistry: no ruby brooch");
+        if(_homemadeBrooch.balanceOf(msg.sender, 1) == 0) {
+            revert NoRubyBrooch(msg.sender);
+        }
         IEPProxy proxy = IEPProxy(_proxyFactory.build(address(this)));
 
         _ownedProxyAddresses[msg.sender][_addressCount] = address(proxy);
@@ -74,8 +82,6 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
         _ownedProxyAddresses[newOwner][index] = proxy;
         _ownedProxyAddresses[msg.sender][index] = address(0);
     }
-
-    fallback() external payable {}
 
     receive() external payable {}
 
