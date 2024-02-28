@@ -6,6 +6,8 @@ solc = "0.8.24"
 evm_version = 'paris'
 optimizer = true
 optimizer_runs = 20_000
+build_info = true
+extra_output = ["storageLayout"]
 
 [rpc_endpoints]
 devnet = "${DEVNET_RPC_URL}"
