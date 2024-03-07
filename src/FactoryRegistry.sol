@@ -5,13 +5,15 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {MulticallUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/MulticallUpgradeable.sol";
 import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
+import {IFactoryRegistry} from "./interfaces/IFactoryRegistry.sol";
 import {EPProxyFactory} from "./proxy/EPProxyFactory.sol";
 import {IEPProxy} from "./proxy/IEPProxy.sol";
 
-contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable {
+contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable, IFactoryRegistry {
 
     error NotProxyOwner(address, address);
     error NoRubyBrooch(address);
+    error ProxyPaused(address);
 
     IHomemadeBroochNFT private _homemadeBrooch;
     EPProxyFactory private _proxyFactory;
@@ -41,7 +43,7 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
         _;
     }
 
-    function createProxy() public {
+    function createProxy() public override {
         if(_homemadeBrooch.balanceOf(msg.sender, 1) == 0) {
             revert NoRubyBrooch(msg.sender);
         }
@@ -52,8 +54,11 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
         _addressCount++;
     }
 
-    function executeSavedTransactions(address proxy) public payable {
+    function executeSavedTransactions(address proxy) public payable override {
         IEPProxy EPProxy = IEPProxy(proxy);
+        if (EPProxy.isPaused()) {
+            revert ProxyPaused(proxy);
+        }
         IEPProxy.Transaction[] memory transactions = EPProxy.getAllSavedTransactions();
         uint256 count = EPProxy.getTransactionCount();
         for (uint256 i = 0; i < count; i++) {
@@ -61,23 +66,27 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
         }
     }
 
-    function execute(address proxy, address target, bytes memory data) public payable proxyOwner(proxy) {
+    function execute(address proxy, address target, bytes memory data) public payable override proxyOwner(proxy) {
         IEPProxy(proxy).execute{value: msg.value}(target, data);
     }
 
-    function setTransaction(address proxy, uint256 order, address to, bytes memory data) public proxyOwner(proxy) {
+    function setTransaction(address proxy, uint256 order, address to, bytes memory data) public override proxyOwner(proxy) {
         IEPProxy(proxy).setTransaction(order, to, data);
     }
 
-    function proxyAddressOfOwnerByIndex(address owner, uint256 index) public view returns (address) {
+    function setPaused(address proxy, bool paused) public proxyOwner(proxy) {
+        IEPProxy(proxy).setPaused(paused);
+    }
+
+    function proxyAddressOfOwnerByIndex(address owner, uint256 index) public view override returns (address) {
         return _ownedProxyAddresses[owner][index];
     }
 
-    function totalAddressCount() public view returns (uint256) {
+    function totalAddressCount() public view override returns (uint256) {
         return _addressCount;
     }
 
-    function transferProxyOwner(address proxy, address newOwner) public proxyOwner(proxy) {
+    function transferProxyOwner(address proxy, address newOwner) public override proxyOwner(proxy) {
         uint256 index = _ownedAddressIndex[proxy];
         _ownedProxyAddresses[newOwner][index] = proxy;
         _ownedProxyAddresses[msg.sender][index] = address(0);

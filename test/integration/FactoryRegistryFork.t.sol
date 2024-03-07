@@ -164,6 +164,66 @@ contract FactoryRegistryFork is Addresses, Test {
         assertEq(actionQueue[2].actionId, 2500);
     }
 
+    function test_RevertQueueActionAndExecuteWithKeeperWhenPaused() public {
+        _deploy();
+        _mintBroochAndCreateProxy();
+
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
+
+        vm.prank(user);
+        registry.execute(
+            address(proxy), address(PLAYER_NFT), abi.encodeCall(playerNFT.mint, (1, "deif125", "", "", "", false, true))
+        );
+
+        (, bytes memory data) = address(PLAYER_NFT).call(abi.encodeWithSignature("totalSupply()"));
+        uint256 totalSupply = abi.decode(data, (uint256));
+
+        IPlayers.QueuedActionInput[] memory queuedActions = new IPlayers.QueuedActionInput[](3);
+        queuedActions[0] = IPlayers.QueuedActionInput({
+            attire: IPlayers.Attire({head: 0, body: 0, legs: 0, feet: 0, arms: 0, neck: 0, ring: 0, reserved1: 0}),
+            regenerateId: 0,
+            choiceId: 0,
+            rightHandEquipmentTokenId: 0,
+            leftHandEquipmentTokenId: 0,
+            combatStyle: IPlayers.CombatStyle.NONE,
+            actionId: 2500, // thieving child
+            timespan: 60 * 60 * 8 // 8 hours
+        });
+        queuedActions[1] = IPlayers.QueuedActionInput({
+            attire: IPlayers.Attire({head: 0, body: 0, legs: 0, feet: 0, arms: 0, neck: 0, ring: 0, reserved1: 0}),
+            regenerateId: 0,
+            choiceId: 0,
+            rightHandEquipmentTokenId: 0,
+            leftHandEquipmentTokenId: 0,
+            combatStyle: IPlayers.CombatStyle.NONE,
+            actionId: 2500, // thieving child
+            timespan: 60 * 60 * 8 // 8 hours
+        });
+        queuedActions[2] = IPlayers.QueuedActionInput({
+            attire: IPlayers.Attire({head: 0, body: 0, legs: 0, feet: 0, arms: 0, neck: 0, ring: 0, reserved1: 0}),
+            regenerateId: 0,
+            choiceId: 0,
+            rightHandEquipmentTokenId: 0,
+            leftHandEquipmentTokenId: 0,
+            combatStyle: IPlayers.CombatStyle.NONE,
+            actionId: 2500, // thieving child
+            timespan: 60 * 60 * 8 // 8 hours
+        });
+
+        vm.prank(user);
+        registry.setTransaction(
+            address(proxy),
+            0,
+            address(PLAYERS),
+            abi.encodeCall(players.startActions, (totalSupply, queuedActions, IPlayers.ActionQueueStatus.NONE))
+        );
+
+        vm.prank(unauthUser);
+        bytes4 selector = bytes4(keccak256("ProxyPaused(address)"));
+        vm.expectRevert(abi.encodeWithSelector(selector, address(proxy)));
+        registry.executeSavedTransactions(address(proxy));
+    }
+
     function test_QueueActionAndExecuteWithKeeper() public {
         _deploy();
         _mintBroochAndCreateProxy();
@@ -216,6 +276,12 @@ contract FactoryRegistryFork is Addresses, Test {
             0,
             address(PLAYERS),
             abi.encodeCall(players.startActions, (totalSupply, queuedActions, IPlayers.ActionQueueStatus.NONE))
+        );
+
+        vm.prank(user);
+        registry.setPaused(
+            address(proxy),
+            false
         );
 
         vm.prank(unauthUser);

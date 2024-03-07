@@ -20,6 +20,7 @@ contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
 
     mapping(uint256 order => Transaction transaction) private _transactions; // owner set transactions to be executed by any keeper
     uint256 private _transactionCount;
+    bool private _paused;
 
     constructor() {
         _disableInitializers();
@@ -27,6 +28,7 @@ contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
 
     function initialize(address _owner, address _authority) external override initializer {
         owner = _owner;
+        _paused = true;
         authority = EPAuthority(_authority);
     }
 
@@ -65,8 +67,16 @@ contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
         return transactions;
     }
 
+    function setPaused(bool paused) public override auth {
+        _paused = paused;
+    }
+
     function getTransactionCount() public view override returns (uint256) {
         return _transactionCount;
+    }
+
+    function isPaused() public view override returns (bool) {
+        return _paused;
     }
 
     receive() external payable {}

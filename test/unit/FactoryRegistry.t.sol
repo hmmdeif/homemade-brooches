@@ -110,6 +110,9 @@ contract FactoryRegistryTest is Test {
         proxy.multicall(data);
 
         vm.prank(user);
+        registry.setPaused(address(proxy), false);
+
+        vm.prank(user);
         vm.expectCall(address(nft), abi.encodeCall(nft.balanceOf, (user, 1)), uint64(3));
         registry.executeSavedTransactions(address(proxy));
     }

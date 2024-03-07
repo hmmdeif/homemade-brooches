@@ -138,4 +138,26 @@ contract EPProxyTest is Addresses, Test {
         assertEq(proxy.getTransactionCount(), 2);
         assertEq(transactions[0].to, address(2));
     }
+
+    function test_RevertSetPausedWhenNotOwner() public {
+        _deploy();
+        _mintBroochAndCreateProxy();
+
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
+        vm.prank(unauthUser);
+        bytes4 selector = bytes4(keccak256("AccessDenied()"));
+        vm.expectRevert(abi.encodeWithSelector(selector));
+        proxy.setPaused(false);
+    }
+
+    function test_SetPaused() public {
+        _deploy();
+        _mintBroochAndCreateProxy();
+
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));        
+        assertEq(proxy.isPaused(), true); // default
+        vm.prank(user);
+        proxy.setPaused(false);
+        assertEq(proxy.isPaused(), false);
+    }
 }
