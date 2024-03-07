@@ -10,7 +10,6 @@ import {EPAuthority} from "src/proxy/EPAuthority.sol";
 import {EPProxyFactory} from "src/proxy/EPProxyFactory.sol";
 
 contract DeployFactoryRegistry is Script {
-
     function run() public {
         // private key for deployment
         uint256 pk = vm.envUint("PRIVATE_KEY");
@@ -26,8 +25,7 @@ contract DeployFactoryRegistry is Script {
         EPProxyFactory proxyFactory = new EPProxyFactory(address(authority), address(beacon));
 
         Upgrades.deployUUPSProxy(
-            "FactoryRegistry.sol",
-            abi.encodeCall(FactoryRegistry.initialize, (owner, nft, address(proxyFactory)))
+            "FactoryRegistry.sol", abi.encodeCall(FactoryRegistry.initialize, (owner, nft, address(proxyFactory)))
         );
 
         vm.stopBroadcast();

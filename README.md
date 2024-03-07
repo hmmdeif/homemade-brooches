@@ -19,7 +19,7 @@ Uses env vars from a file `.env`. Copy and rename `.env.sample` and fill in the 
 source .env
 
 # To deploy and verify our contract
-forge script script/HomemadeBroochNFT.s.sol:DeployBrooches --rpc-url $RPC_URL --broadcast -vvvv --slow
+forge script script/HomemadeBroochNFT.s.sol:DeployBrooches --rpc-url $RPC_URL --broadcast -vvvv --slow --ffi
 
 # To verify
 forge script script/HomemadeBroochNFT.s.sol:DeployBrooches --rpc-url $RPC_URL --verify -vvvv --resume
@@ -34,3 +34,7 @@ You need to update foundry to a later build. This error is suppressed in later v
 #### Deploy script transaction failures
 
 `--slow` is necessary to stop all tx being sent and being mined out of order.
+
+#### Deploy script `--ffi` checks failed
+
+Ensure you have installed the latest git and foundry versions and have followed the steps outlined by [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades)

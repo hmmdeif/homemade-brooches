@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 import {HomemadeBroochNFT} from "src/HomemadeBroochNFT.sol";
 import {FactoryRegistry} from "src/FactoryRegistry.sol";
@@ -44,8 +45,7 @@ contract FactoryRegistryFork is Addresses, Test {
         nft.setTokenUnlock(1, true, 10 ether);
 
         EPAuthority authority = new EPAuthority(owner);
-        EPProxy beaconImpl = new EPProxy();
-        UpgradeableBeacon beacon = new UpgradeableBeacon(address(beaconImpl), owner);
+        address beacon = Upgrades.deployBeacon("EPProxy.sol", owner);
         EPProxyFactory proxyFactory = new EPProxyFactory(address(authority), address(beacon));
         FactoryRegistry impl = new FactoryRegistry();
         ERC1967Proxy registryProxy = new ERC1967Proxy(payable(impl), "");
@@ -279,10 +279,7 @@ contract FactoryRegistryFork is Addresses, Test {
         );
 
         vm.prank(user);
-        registry.setPaused(
-            address(proxy),
-            false
-        );
+        registry.setPaused(address(proxy), false);
 
         vm.prank(unauthUser);
         registry.executeSavedTransactions(address(proxy));

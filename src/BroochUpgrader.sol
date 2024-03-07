@@ -7,7 +7,6 @@ import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
 import {IBroochUpgrader} from "./interfaces/IBroochUpgrader.sol";
 
 contract BroochUpgrader is ERC1155Holder, Ownable, IBroochUpgrader {
-
     error TokenLocked(uint256 tokenId, bool unlocked);
     error WrongMsgValue(uint256 given, uint256 actual);
 

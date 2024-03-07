@@ -10,7 +10,6 @@ import {EPProxyFactory} from "./proxy/EPProxyFactory.sol";
 import {IEPProxy} from "./proxy/IEPProxy.sol";
 
 contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable, IFactoryRegistry {
-
     error NotProxyOwner(address, address);
     error NoRubyBrooch(address);
     error ProxyPaused(address);
@@ -22,6 +21,7 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
     mapping(address proxy => uint256 proxyId) private _ownedAddressIndex;
     uint256 private _addressCount;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
@@ -37,14 +37,14 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
 
     modifier proxyOwner(address proxy) {
         uint256 index = _ownedAddressIndex[proxy];
-        if(_ownedProxyAddresses[msg.sender][index] != proxy) {
+        if (_ownedProxyAddresses[msg.sender][index] != proxy) {
             revert NotProxyOwner(msg.sender, proxy);
         }
         _;
     }
 
     function createProxy() public override {
-        if(_homemadeBrooch.balanceOf(msg.sender, 1) == 0) {
+        if (_homemadeBrooch.balanceOf(msg.sender, 1) == 0) {
             revert NoRubyBrooch(msg.sender);
         }
         IEPProxy proxy = IEPProxy(_proxyFactory.build(address(this)));
@@ -70,7 +70,11 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
         IEPProxy(proxy).execute{value: msg.value}(target, data);
     }
 
-    function setTransaction(address proxy, uint256 order, address to, bytes memory data) public override proxyOwner(proxy) {
+    function setTransaction(address proxy, uint256 order, address to, bytes memory data)
+        public
+        override
+        proxyOwner(proxy)
+    {
         IEPProxy(proxy).setTransaction(order, to, data);
     }
 

@@ -7,7 +7,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
 
 contract HomemadeBroochNFT is ERC1155, Ownable, IERC2981, IHomemadeBroochNFT {
-
     error ZeroAddress();
     error LengthMismatch(uint256 idLength, uint256 valueLength);
     error TokenLocked(uint256 tokenId, bool unlocked);

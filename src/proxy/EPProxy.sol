@@ -15,13 +15,13 @@ import {IEPProxy} from "./IEPProxy.sol";
 // the proxy can be changed, this allows for dynamic ownership models
 // i.e. a multisig
 contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
-
     error ZeroAddress();
 
     mapping(uint256 order => Transaction transaction) private _transactions; // owner set transactions to be executed by any keeper
     uint256 private _transactionCount;
     bool private _paused;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
@@ -38,16 +38,6 @@ contract EPProxy is EPAuth, ERC1155Holder, Multicall, IEPProxy, Initializable {
         }
 
         (bool success, bytes memory response) = _target.call(_data);
-        require(success, string(response));
-    }
-
-    // use if you need to call an action contract
-    function executeDelegate(address _target, bytes memory _data) public payable override auth {
-        if (_target == address(0x0)) {
-            revert ZeroAddress();
-        }
-
-        (bool success, bytes memory response) = _target.delegatecall(_data);
         require(success, string(response));
     }
 

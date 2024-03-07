@@ -154,7 +154,7 @@ contract EPProxyTest is Addresses, Test {
         _deploy();
         _mintBroochAndCreateProxy();
 
-        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));        
+        EPProxy proxy = EPProxy(payable(registry.proxyAddressOfOwnerByIndex(user, 0)));
         assertEq(proxy.isPaused(), true); // default
         vm.prank(user);
         proxy.setPaused(false);
