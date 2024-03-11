@@ -16,8 +16,9 @@ contract DeployBrooches is Script {
 
         vm.startBroadcast(pk);
 
-        nft =
-        new HomemadeBroochNFT(owner, "ipfs://Qmeb6LJ57G4emTcRagxwEakgvwvSrqv6693mkBx7F9aaWA/assets/brooches/{id}.json");
+        nft = new HomemadeBroochNFT(
+            owner, "ipfs://Qmeb6LJ57G4emTcRagxwEakgvwvSrqv6693mkBx7F9aaWA/assets/brooches/{id}.json"
+        );
 
         vm.stopBroadcast();
 

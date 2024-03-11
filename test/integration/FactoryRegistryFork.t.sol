@@ -8,7 +8,7 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 import {HomemadeBroochNFT} from "src/HomemadeBroochNFT.sol";
-import {FactoryRegistry} from "src/FactoryRegistry.sol";
+import {FactoryRegistryV2} from "src/FactoryRegistryV2.sol";
 import {EPAuthority} from "src/proxy/EPAuthority.sol";
 import {EPProxyFactory} from "src/proxy/EPProxyFactory.sol";
 import {EPProxy} from "src/proxy/EPProxy.sol";
@@ -25,7 +25,7 @@ contract FactoryRegistryFork is Addresses, Test {
     address public unauthUser = vm.addr(unauthUserKey);
 
     HomemadeBroochNFT public nft;
-    FactoryRegistry public registry;
+    FactoryRegistryV2 public registry;
     IPlayerNFT public playerNFT;
     IPlayers public players;
 
@@ -49,9 +49,9 @@ contract FactoryRegistryFork is Addresses, Test {
         opts.unsafeSkipAllChecks = true;
         address beacon = Upgrades.deployBeacon("EPProxy.sol", owner, opts);
         EPProxyFactory proxyFactory = new EPProxyFactory(address(authority), address(beacon));
-        FactoryRegistry impl = new FactoryRegistry();
+        FactoryRegistryV2 impl = new FactoryRegistryV2();
         ERC1967Proxy registryProxy = new ERC1967Proxy(payable(impl), "");
-        registry = FactoryRegistry(payable(registryProxy));
+        registry = FactoryRegistryV2(payable(registryProxy));
         registry.initialize(owner, address(nft), address(proxyFactory));
 
         vm.prank(owner);
