@@ -4,18 +4,19 @@ pragma solidity ^0.8.24;
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {MulticallUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/MulticallUpgradeable.sol";
-import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
-import {IFactoryRegistryV2} from "./interfaces/IFactoryRegistryV2.sol";
-import {EPProxyFactory} from "./proxy/EPProxyFactory.sol";
-import {IEPProxy} from "./proxy/IEPProxy.sol";
+import {IHomemadeBroochNFT} from "../interfaces/IHomemadeBroochNFT.sol";
+import {IFactoryRegistryV2} from "../interfaces/IFactoryRegistryV2.sol";
+import {EPProxyFactory} from "../proxy/EPProxyFactory.sol";
+import {IEPProxy} from "../proxy/IEPProxy.sol";
 
-/// @custom:oz-upgrades-from FactoryRegistryV2
-contract FactoryRegistryV3 is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable, IFactoryRegistryV2 {
+/// @custom:oz-upgrades-from FactoryRegistryV3
+contract FactoryRegistryV4 is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable, IFactoryRegistryV2 {
     error NotProxyOwner(address, address);
     error NoRubyBrooch(address);
     error ProxyPaused(address);
 
     event Created(address indexed sender, address indexed owner, address proxy, uint256 proxyId);
+    event TransferProxyOwner(address indexed owner, address indexed newOwner, address proxy, uint256 proxyId);
 
     IHomemadeBroochNFT private _homemadeBrooch;
     EPProxyFactory private _proxyFactory;
@@ -102,6 +103,7 @@ contract FactoryRegistryV3 is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgr
         uint256 index = _ownedAddressIndex[proxy];
         _ownedProxyAddresses[newOwner][index] = proxy;
         _ownedProxyAddresses[msg.sender][index] = address(0);
+        emit TransferProxyOwner(msg.sender, newOwner, proxy, index);
     }
 
     receive() external payable {}

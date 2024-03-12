@@ -4,12 +4,13 @@ pragma solidity ^0.8.24;
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {MulticallUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/MulticallUpgradeable.sol";
-import {IHomemadeBroochNFT} from "./interfaces/IHomemadeBroochNFT.sol";
-import {IFactoryRegistry} from "./interfaces/IFactoryRegistry.sol";
-import {EPProxyFactory} from "./proxy/EPProxyFactory.sol";
-import {IEPProxy} from "./proxy/IEPProxy.sol";
+import {IHomemadeBroochNFT} from "../interfaces/IHomemadeBroochNFT.sol";
+import {IFactoryRegistryV2} from "../interfaces/IFactoryRegistryV2.sol";
+import {EPProxyFactory} from "../proxy/EPProxyFactory.sol";
+import {IEPProxy} from "../proxy/IEPProxy.sol";
 
-contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable, IFactoryRegistry {
+/// @custom:oz-upgrades-from FactoryRegistry
+contract FactoryRegistryV2 is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgradeable, IFactoryRegistryV2 {
     error NotProxyOwner(address, address);
     error NoRubyBrooch(address);
     error ProxyPaused(address);
@@ -84,6 +85,10 @@ contract FactoryRegistry is UUPSUpgradeable, OwnableUpgradeable, MulticallUpgrad
 
     function proxyAddressOfOwnerByIndex(address owner, uint256 index) public view override returns (address) {
         return _ownedProxyAddresses[owner][index];
+    }
+
+    function indexOfProxy(address proxy) public view override returns (uint256) {
+        return _ownedAddressIndex[proxy];
     }
 
     function totalAddressCount() public view override returns (uint256) {

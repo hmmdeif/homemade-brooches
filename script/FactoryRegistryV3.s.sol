@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
-import {FactoryRegistryV3} from "src/FactoryRegistryV3.sol";
+import {FactoryRegistryV3} from "src/factory/FactoryRegistryV3.sol";
 
 contract DeployFactoryRegistryV3 is Script {
     function run() public {

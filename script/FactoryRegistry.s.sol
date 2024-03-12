@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
-import {FactoryRegistry} from "src/FactoryRegistry.sol";
+import {FactoryRegistry} from "src/factory/FactoryRegistry.sol";
 import {EPAuthority} from "src/proxy/EPAuthority.sol";
 import {EPProxyFactory} from "src/proxy/EPProxyFactory.sol";
 

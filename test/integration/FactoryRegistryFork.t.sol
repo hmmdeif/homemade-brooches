@@ -8,7 +8,7 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 import {HomemadeBroochNFT} from "src/HomemadeBroochNFT.sol";
-import {FactoryRegistryV2} from "src/FactoryRegistryV2.sol";
+import {FactoryRegistryV2} from "src/factory/FactoryRegistryV2.sol";
 import {EPAuthority} from "src/proxy/EPAuthority.sol";
 import {EPProxyFactory} from "src/proxy/EPProxyFactory.sol";
 import {EPProxy} from "src/proxy/EPProxy.sol";
